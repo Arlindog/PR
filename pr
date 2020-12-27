@@ -1,0 +1,63 @@
+source $(echo $(pwd)/.pr_env)
+
+function parse_git_branch() {
+   git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/ \1/' | xargs
+}
+
+function openPR() {
+  if [ $VERSION_CONTROL_STRATEGY = "GITHUB" ]
+  then 
+    echo "$BASE_REPO_URL/compare/$BASE_BRANCH...$TARGET_BRANCH"
+  fi
+}
+
+die() {
+  printf '%s\n' "$1" >&2
+  exit 1
+}
+
+TARGET_BRANCH=""
+BASE_BRANCH=""
+
+while :; do
+  case $1 in
+      -b|--baseBranch)       # Takes an option argument; ensure it has been specified.
+          if [ "$2" ]; then
+              BASE_BRANCH=$2
+              shift
+          else
+              die 'ERROR: "--baseBranch" requires a non-empty option argument.'
+          fi
+          ;;
+      -t|--targetBranch)
+          if [ "$2" ]; then
+              TARGET_BRANCH=$2
+              shift
+          else
+              die 'ERROR: "--targetBranch" requires a non-empty option argument.'
+          fi
+          ;;
+      --)              # End of all options.
+          shift
+          break
+          ;;
+      -?*)
+          printf 'WARN: Unknown option (ignored): %s\n' "$1" >&2
+          ;;
+      *)               # Default case: No more options, so break out of the loop.
+          break
+  esac
+  shift
+done
+
+if [ -z $TARGET_BRANCH ]
+then
+  TARGET_BRANCH=$(parse_git_branch)
+fi
+
+if [ -z $BASE_BRANCH ]
+then
+  BASE_BRANCH=$BASE_REPO_BRANCH
+fi
+
+open $(openPR)
