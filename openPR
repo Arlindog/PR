@@ -8,6 +8,9 @@ function openPR() {
   if [ $VERSION_CONTROL_STRATEGY = "GITHUB" ]
   then 
     echo "$BASE_REPO_URL/compare/$BASE_BRANCH...$TARGET_BRANCH"
+  elif [ $VERSION_CONTROL_STRATEGY = "BITBUCKET" ]
+  then
+    echo "$BASE_REPO_URL/pull-requests?create&targetBranch=$TARGET_BRANCH&sourceBranch=$BASE_BRANCH&targetRepoId=$TARGET_REPO_ID"
   fi
 }
 
